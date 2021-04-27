@@ -68,6 +68,8 @@
     <Compile Include="Almacen.cs" />
     <Compile Include="Producto.cs" />
     <Compile Include="Proveedor.cs" />
+    <Compile Include="RemisionEntrada.cs" />
+    <Compile Include="RemisionEntradaDetalle.cs" />
     <Compile Include="Service1.svc.cs">
       <DependentUpon>Service1.svc</DependentUpon>
     </Compile>

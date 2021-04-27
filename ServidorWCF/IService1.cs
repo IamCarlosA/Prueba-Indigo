@@ -48,6 +48,12 @@ namespace ServidorWCF
         [OperationContract]
         List<Producto> GetProductos();
 
+        //------------------------RemisionEntrada------------------
+        [OperationContract]
+        string createRemisionEntrada(RemisionEntrada remision);
+        [OperationContract]
+        string updateEstado(int idRemision, int accion);
+
 
     }
 

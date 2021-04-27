@@ -422,5 +422,218 @@ namespace ServidorWCF
                 conexion.Close();
             }
         }
+
+
+        //-------------------------- impl remision------------------------
+
+        public string createRemisionEntrada(RemisionEntrada remision)
+        {
+            SqlConnection conexion = new SqlConnection(conexionString);
+            conexion.Open();
+            SqlCommand cmd = new SqlCommand("INSERT INTO RemisionEntrada(Codigo, FechaDocumento, IdProveedor, IdAlmacen, Estado) VALUES(@Codigo, @FechaDocumento, @IdProveedor, @IdAlmacen, @Estado); SELECT SCOPE_IDENTITY();", conexion);
+            cmd.Parameters.AddWithValue("@Codigo", remision.Codigo);
+            cmd.Parameters.AddWithValue("@FechaDocumento", remision.FechaDocumento);
+            cmd.Parameters.AddWithValue("@IdProveedor", remision.IdProveedor);
+            cmd.Parameters.AddWithValue("@IdAlmacen", remision.IdAlmacen);
+            cmd.Parameters.AddWithValue("@Estado", 1);
+            try
+            {
+                int idRemisionReturn;
+                object idRemision = cmd.ExecuteScalar();
+                if (idRemision != null)
+                {
+                    int.TryParse(idRemision.ToString(), out idRemisionReturn);
+
+                    //ingresando detalles de remision
+
+                    if (remision.List.Count > 0)
+                    {
+
+                        var hashset = new HashSet<int>();
+                        foreach (var re in remision.List)
+                        {
+                            if (!hashset.Add(re.IdProducto))
+                            {
+                                return "Productos repetidos";
+
+                            }
+                        }
+                        foreach (RemisionEntradaDetalle detalle in remision.List)
+                        {
+                            SqlCommand detalles = new SqlCommand("INSERT INTO RemisonEntradaDetalle ( IdRemisionEntrada, IdProducto, Cantidad) VALUES(@IdRemisionEntrada, @IdProducto, @Cantidad);", conexion);
+                            detalles.Parameters.AddWithValue("@IdRemisionEntrada", idRemisionReturn);
+                            detalles.Parameters.AddWithValue("@IdProducto", detalle.IdProducto);
+                            detalles.Parameters.AddWithValue("@Cantidad", detalle.Cantidad);
+                            detalles.ExecuteNonQuery();
+                        }
+
+                        return "Remision creada correctamente";
+                    }else
+                    {
+                        return "Remision sin productos";
+                    }
+
+                }
+                return "error al crear remision";
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return "Error interno del server";
+            }
+            finally
+            {
+                conexion.Close();
+            }
+        }
+
+        public string updateEstado(int idRemision, int accion)
+        {
+            
+            SqlConnection conexion = new SqlConnection(conexionString);
+            conexion.Open();
+            SqlCommand cmd = new SqlCommand("SELECT * FROM RemisionEntrada WHERE Id = @Id", conexion);
+            cmd.Parameters.AddWithValue("@Id", idRemision);
+
+            try
+            {
+                RemisionEntrada remision = new RemisionEntrada();
+                SqlDataReader reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        remision.Id = reader.GetInt32(0);
+                        remision.Codigo = reader.GetString(1);
+                        remision.FechaDocumento = reader.GetDateTime(2);
+                        remision.IdProveedor = reader.GetInt32(3);
+                        remision.IdAlmacen = reader.GetInt32(4);
+                        remision.Estado = reader.GetInt32(5);
+                    }
+
+                    if (remision.Estado == 1)
+                    {
+                        List<RemisionEntradaDetalle> productos = new List<RemisionEntradaDetalle>();
+                        productos= EntradaDetalle(idRemision);
+                        if (productos.Count > 0)
+                        {
+                            switch (accion)
+                            {
+                                case 2:
+                                    string num="";
+                                    foreach (RemisionEntradaDetalle producto in productos)
+                                    {
+                                        num = inventario(remision, producto);
+                                    }
+                                    return "Remision Confirmada :"+ num;
+
+                                case 3:
+                                    SqlConnection conexion2 = new SqlConnection(conexionString);
+                                    conexion2.Open();
+                                    SqlCommand cmd2 = new SqlCommand("UPDATE RemisionEntrada SET Estado = 3  WHERE Id = @Id", conexion2);
+                                    cmd2.Parameters.AddWithValue("@Id", remision.Id);
+                                    cmd2.ExecuteNonQuery();
+
+                                    return "Remision Anulada";
+                                default:
+                                    return "Accion no valida";
+                            }
+                        }
+                        else
+                        {
+                            return "Remision sin productos";
+                        }
+                    }
+                    return "No tiene permisos";
+                }
+                return "No encontro remision";
+            }
+            catch
+            {
+                return "error";
+            }
+            finally
+            {
+                conexion.Close();
+                
+            }
+        }
+
+        public List<RemisionEntradaDetalle> EntradaDetalle(int remision)
+        {
+            List<RemisionEntradaDetalle> productos = new List<RemisionEntradaDetalle>();
+            SqlConnection conexion = new SqlConnection(conexionString);
+            conexion.Open();
+            SqlCommand cmd = new SqlCommand("SELECT * FROM RemisonEntradaDetalle WHERE IdRemisionEntrada = @IdRemisionEntrada", conexion);
+            cmd.Parameters.AddWithValue("@IdRemisionEntrada", remision);
+            try
+            {
+                SqlDataReader reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        productos.Add(new RemisionEntradaDetalle(reader.GetInt32(0), reader.GetInt32(1), reader.GetInt32(2), reader.GetInt32(3)));
+                    }
+                }
+                reader.Close();
+                return productos;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                conexion.Close();
+            }
+            
+        }
+
+        public string inventario(RemisionEntrada remi, RemisionEntradaDetalle deta)
+        {
+            SqlConnection conexion = new SqlConnection(conexionString);
+            conexion.Open();
+            SqlCommand cmd = new SqlCommand("SELECT * FROM InventarioFisico WHERE IdAlmacen = @IdAlmacen AND IdProducto = @IdProducto", conexion);
+            cmd.Parameters.AddWithValue("@IdAlmacen", remi.IdAlmacen);
+            cmd.Parameters.AddWithValue("@IdProducto", deta.IdProducto);
+            try
+            {
+                SqlDataReader reader = cmd.ExecuteReader();
+                
+                if (reader.HasRows)
+                {
+                    SqlConnection conexion3 = new SqlConnection(conexionString);
+                    conexion3.Open();
+                    SqlCommand cmd3 = new SqlCommand("UPDATE InventarioFisico SET Cantidad = Cantidad + @Cantidad  WHERE IdAlmacen = @IdAlmacen AND IdProducto = @IdProducto; UPDATE RemisionEntrada SET Estado = 2  WHERE Id = @Id", conexion3);
+                    cmd3.Parameters.AddWithValue("@IdAlmacen", remi.IdAlmacen);
+                    cmd3.Parameters.AddWithValue("@IdProducto", deta.IdProducto);
+                    cmd3.Parameters.AddWithValue("@Cantidad", deta.Cantidad);
+                    cmd3.Parameters.AddWithValue("@Id", remi.Id);
+                    cmd3.ExecuteNonQuery();
+                    return "Inventario Actualizado";
+                } else
+                {
+                    SqlConnection conexion2 = new SqlConnection(conexionString);
+                    conexion2.Open();
+                    SqlCommand cmd2 = new SqlCommand("INSERT INTO InventarioFisico ( IdAlmacen, IdProducto, Cantidad) VALUES(@IdAlmacen, @IdProducto, @Cantidad); UPDATE RemisionEntrada SET Estado = 2  WHERE Id = @Id", conexion2);
+                    cmd2.Parameters.AddWithValue("@IdAlmacen", remi.IdAlmacen);
+                    cmd2.Parameters.AddWithValue("@IdProducto", deta.IdProducto);
+                    cmd2.Parameters.AddWithValue("@Cantidad", deta.Cantidad);
+                    cmd2.Parameters.AddWithValue("@Id", remi.Id);
+                    cmd2.ExecuteNonQuery();
+                    return "Inventario comfirmado y guardado";
+                }
+   
+            }
+            catch (Exception e)
+            {
+
+                throw e;
+            } finally
+            {
+                conexion.Close();
+            }
+        }
     }
 }
