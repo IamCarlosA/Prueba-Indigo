@@ -46,7 +46,7 @@ namespace ServidorWCF
             cmd.Parameters.AddWithValue("@Id", id);
             try
             {
-                return (cmd.ExecuteNonQuery() == 1) ? "Proveedor: " + id + " Elimonado correctamente" : "Proveedor: " + id + " No existe";
+                return (cmd.ExecuteNonQuery() == 1) ? "Proveedor: " + id + " Elimonado correctamente" : "Proveedor: " + id + "Asociado, no se puede borrar";
             }
             catch (Exception e)
             {
@@ -631,6 +631,37 @@ namespace ServidorWCF
 
                 throw e;
             } finally
+            {
+                conexion.Close();
+            }
+        }
+
+        public List<RemisionEntrada> getRemisiones()
+        {
+            List<RemisionEntrada> remisiones = new List<RemisionEntrada>();
+            List<RemisionEntradaDetalle> detalles = new List<RemisionEntradaDetalle>();
+            SqlConnection conexion = new SqlConnection(conexionString);
+            conexion.Open();
+            SqlCommand cmd = new SqlCommand("SELECT * FROM RemisionEntrada", conexion);
+            try
+            {
+                SqlDataReader reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        remisiones.Add(new RemisionEntrada(reader.GetInt32(0), reader.GetString(1), reader.GetDateTime(2), reader.GetInt32(3), reader.GetInt32(4), reader.GetInt32(5), detalles));
+                    }
+                }
+                reader.Close();
+                return remisiones;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return remisiones;
+            }
+            finally
             {
                 conexion.Close();
             }

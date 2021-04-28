@@ -52,6 +52,8 @@ namespace ServidorWCF
         [OperationContract]
         string createRemisionEntrada(RemisionEntrada remision);
         [OperationContract]
+        List<RemisionEntrada> getRemisiones();
+        [OperationContract]
         string updateEstado(int idRemision, int accion);
 
 

@@ -1,0 +1,46 @@
+﻿<Page x:Class="Cliente.RemisionEntradaP"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Cliente"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="RemisionEntradaP">
+
+    <Grid HorizontalAlignment="Left" Width="800">
+        <DataGrid x:Name="dg" Margin="52,225,41,25" />
+        <TextBox x:Name="input1" HorizontalAlignment="Left" Margin="228,56,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" Height="20"/>
+        <TextBlock HorizontalAlignment="Left" Margin="65,58,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="20" Width="132" FontSize="16" TextAlignment="Right" Text="CODIGO"/>
+        <TextBlock HorizontalAlignment="Left" Margin="65,84,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="20" Width="132" FontSize="16" TextAlignment="Right" Text="FECHA"/>
+        <Button x:Name="save" Content="Guardar Remision" HorizontalAlignment="Left" Margin="52,181,0,0" VerticalAlignment="Top" Height="30" Width="134"  Click="save_Click"/>
+        <TextBlock HorizontalAlignment="Left" Margin="65,110,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="20" Width="132" FontSize="16" TextAlignment="Right" Text="PROVEEDOR"/>
+        <TextBlock HorizontalAlignment="Left" Margin="65,136,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="20" Width="132" FontSize="16" TextAlignment="Right" Text="ALMACEN"/>
+        <DatePicker x:Name="input2" HorizontalAlignment="Left" Margin="228,81,0,0" VerticalAlignment="Top" Width="150"/>
+        <ComboBox x:Name="select1" HorizontalAlignment="Left" Margin="228,110,0,0" VerticalAlignment="Top" Width="150">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Nombre}"></TextBlock>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <ComboBox x:Name="select2" HorizontalAlignment="Left" Margin="228,141,0,0" VerticalAlignment="Top" Width="150">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Nombre}"></TextBlock>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <ComboBox x:Name="select3" HorizontalAlignment="Left" Margin="565,56,0,0" VerticalAlignment="Top" Width="150" >
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Nombre}"></TextBlock>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <Button x:Name="savepro" Content="Agregar Producto" HorizontalAlignment="Left" Margin="565,117,0,0" VerticalAlignment="Top" Height="30" Width="150" RenderTransformOrigin="0.893,-0.467" Click="savepro_Click" />
+        <TextBox x:Name="cantidad" HorizontalAlignment="Left" Margin="566,82,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="149" Height="20"/>
+        <TextBlock HorizontalAlignment="Left" Margin="416,56,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="20" Width="132" FontSize="16" TextAlignment="Right" Text="PRODUCTO"/>
+        <TextBlock HorizontalAlignment="Left" Margin="416,82,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="20" Width="132" FontSize="16" TextAlignment="Right" Text="CANTIDAD"/>
+    </Grid>
+</Page>
